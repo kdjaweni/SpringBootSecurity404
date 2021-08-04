@@ -1,6 +1,7 @@
-package com.example.springbootsecurity4_02;
+package com.example.springbootsecurity4_04;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -15,6 +16,12 @@ public class HomeController {
         return "login";
     }
 
+    @PostMapping("/logout")
+    public String logout(){
+        return "redirect:/login?logout=true";
+    }
     @RequestMapping("/admin")
-    public String admin(){return "admin";}
+    public String admin(){
+        return "admin";
+    }
 }

@@ -1,9 +1,8 @@
-package com.example.springbootsecurity4_02;
+package com.example.springbootsecurity4_04;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.expression.SecurityExpressionOperations;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -17,12 +16,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.authorizeRequests()
+                .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/admin").hasAnyRole("ADMIN")
                 .antMatchers("/**").hasAnyRole("ADMIN", "USER")
                 .and()
                 .formLogin()
                 .loginPage("/login")
-                .permitAll();
+                .permitAll()
+                .and()
+                .logout()
+                .logoutSuccessUrl("/login?logout=true").permitAll();
         //for accessing H2 for debugging purpose
         httpSecurity.csrf().ignoringAntMatchers("/h2-console/**");
         httpSecurity.headers().frameOptions().sameOrigin();
@@ -39,14 +42,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception{
         auth.jdbcAuthentication()
                 .dataSource(dataSource)
-                .withDefaultSchema()
-                .withUser("admin").password(passwordEncoder().encode("admin"))
-                .roles("ADMIN","USER")
-                .and()
-                .withUser("user")
-                .password(passwordEncoder().encode("user"))
-                .roles("USER");
-
+                .usersByUsernameQuery("select username, password, enabled from" + "user_table where username=?")
+                .authoritiesByUsernameQuery("select username, role from role_table" + "where username=?");
 
     }
 }
